@@ -5,10 +5,24 @@ import argparse
 import csv
 import json
 import sys
+from pathlib import Path
 from .models import ClinicalCasePayload
 from .agents import PyramidalTilingCoordinator
 
 coordinator = PyramidalTilingCoordinator()
+
+
+def _resolve_safe_path(file_path: str, must_exist: bool = False) -> Path:
+    """Resolve a path safely, preventing path traversal outside the working directory."""
+    path = Path(file_path).resolve()
+    cwd = Path.cwd().resolve()
+    if must_exist and not path.exists():
+        raise FileNotFoundError(f"Input file not found: {file_path}")
+    try:
+        path.relative_to(cwd)
+    except ValueError:
+        raise ValueError(f"Path '{file_path}' is outside the working directory. Operation denied.")
+    return path
 
 
 def main(argv=None):
@@ -68,7 +82,10 @@ def main(argv=None):
         return 0
 
     if args.command == "batch":
-        with open(args.input, mode="r", encoding="utf-8-sig") as f:
+        in_path = _resolve_safe_path(args.input, must_exist=True)
+        out_path = _resolve_safe_path(args.output, must_exist=False)
+
+        with open(in_path, mode="r", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
             fieldnames = list(reader.fieldnames or [])
             rows = list(reader)
@@ -92,7 +109,7 @@ def main(argv=None):
             row_dict["consensus_summary"] = dossier["consensus_summary"]
             out_rows.append(row_dict)
 
-        with open(args.output, mode="w", encoding="utf-8", newline="") as f:
+        with open(out_path, mode="w", encoding="utf-8", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=out_fields)
             writer.writeheader()
             writer.writerows(out_rows)

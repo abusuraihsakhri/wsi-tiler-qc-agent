@@ -209,56 +209,6 @@ class Enrichment2MultiresolutionFocusQualityHeatmapEngine:
         return res
 
 # =============================================================================
-# 5. IMPLEMENTATION
-# =============================================================================
-@dataclass
-class ImplementationEngineResult:
-    feature_name: str = "Implementation"
-    status: str = "OPTIMAL"
-    score: float = 0.0
-    metrics: Dict[str, Any] = field(default_factory=dict)
-    alerts: List[str] = field(default_factory=list)
-    recommendations: List[str] = field(default_factory=list)
-    timestamp: str = field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())
-
-class ImplementationEngine:
-    """
-    Implementation: **File**: wsi_tiler_qc/agents.py — extend TissueSegmentationAgent
-    """
-    def __init__(self, threshold: float = 1.0, config: Optional[Dict[str, Any]] = None):
-        self.threshold = threshold
-        self.config = config or {}
-        self.history: List[ImplementationEngineResult] = []
-
-    def evaluate(self, primary_value: float, secondary_value: float = 0.0, **kwargs) -> ImplementationEngineResult:
-        alerts = []
-        recs = []
-        status = "OPTIMAL"
-        score = round(float(primary_value), 3)
-
-        if primary_value > self.threshold * 2:
-            status = "CRITICAL_ALERT"
-            alerts.append(f"Implementation: Primary value {primary_value:.2f} breached critical threshold ({self.threshold * 2:.2f})")
-            recs.append("Initiate immediate protocol review and escalate to attending lead.")
-        elif primary_value > self.threshold:
-            status = "WARNING"
-            alerts.append(f"Implementation: Value {primary_value:.2f} exceeds baseline threshold ({self.threshold:.2f})")
-            recs.append("Increase monitoring frequency and perform secondary verification.")
-        else:
-            recs.append("Parameters nominal under standard operating bounds.")
-
-        res = ImplementationEngineResult(
-            feature_name="Implementation",
-            status=status,
-            score=score,
-            metrics={"primary": primary_value, "secondary": secondary_value, **kwargs},
-            alerts=alerts,
-            recommendations=recs
-        )
-        self.history.append(res)
-        return res
-
-# =============================================================================
 # 6. ENRICHMENT #3: OTSU TISSUE MASK + TISSUE FOLD SEGMENTATION
 # =============================================================================
 @dataclass
@@ -299,56 +249,6 @@ class Enrichment3OtsuTissueMaskTissueFoldSegmentationEngine:
 
         res = Enrichment3OtsuTissueMaskTissueFoldSegmentationEngineResult(
             feature_name="Enrichment #3: Otsu Tissue Mask + Tissue Fold Segmentation",
-            status=status,
-            score=score,
-            metrics={"primary": primary_value, "secondary": secondary_value, **kwargs},
-            alerts=alerts,
-            recommendations=recs
-        )
-        self.history.append(res)
-        return res
-
-# =============================================================================
-# 7. IMPLEMENTATION
-# =============================================================================
-@dataclass
-class ImplementationEngineResult:
-    feature_name: str = "Implementation"
-    status: str = "OPTIMAL"
-    score: float = 0.0
-    metrics: Dict[str, Any] = field(default_factory=dict)
-    alerts: List[str] = field(default_factory=list)
-    recommendations: List[str] = field(default_factory=list)
-    timestamp: str = field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())
-
-class ImplementationEngine:
-    """
-    Implementation: **File**: wsi_tiler_qc/agents.py — add method to TissueSegmentationAgent
-    """
-    def __init__(self, threshold: float = 1.0, config: Optional[Dict[str, Any]] = None):
-        self.threshold = threshold
-        self.config = config or {}
-        self.history: List[ImplementationEngineResult] = []
-
-    def evaluate(self, primary_value: float, secondary_value: float = 0.0, **kwargs) -> ImplementationEngineResult:
-        alerts = []
-        recs = []
-        status = "OPTIMAL"
-        score = round(float(primary_value), 3)
-
-        if primary_value > self.threshold * 2:
-            status = "CRITICAL_ALERT"
-            alerts.append(f"Implementation: Primary value {primary_value:.2f} breached critical threshold ({self.threshold * 2:.2f})")
-            recs.append("Initiate immediate protocol review and escalate to attending lead.")
-        elif primary_value > self.threshold:
-            status = "WARNING"
-            alerts.append(f"Implementation: Value {primary_value:.2f} exceeds baseline threshold ({self.threshold:.2f})")
-            recs.append("Increase monitoring frequency and perform secondary verification.")
-        else:
-            recs.append("Parameters nominal under standard operating bounds.")
-
-        res = ImplementationEngineResult(
-            feature_name="Implementation",
             status=status,
             score=score,
             metrics={"primary": primary_value, "secondary": secondary_value, **kwargs},
@@ -418,9 +318,7 @@ class WsitilerqcagentEnrichmentSuite:
         self.enrichment1dicomwsim = Enrichment1DicomWsiMetadataExtractionScannerFingerprintingEngine()
         self.implementationengine = ImplementationEngine()
         self.enrichment2multireso = Enrichment2MultiresolutionFocusQualityHeatmapEngine()
-        self.implementationengine = ImplementationEngine()
         self.enrichment3otsutissu = Enrichment3OtsuTissueMaskTissueFoldSegmentationEngine()
-        self.implementationengine = ImplementationEngine()
         self.enrichment4penmarkin = Enrichment4PenmarkingArtifactDetectionWithColorDeconvolutionEngine()
 
     def execute_all(self, primary_val: float = 1.5, secondary_val: float = 0.5) -> Dict[str, Any]:
@@ -429,9 +327,7 @@ class WsitilerqcagentEnrichmentSuite:
         results["Enrichment1DicomWsiMetadataExtractionScannerFingerprintingEngine"] = self.enrichment1dicomwsim.evaluate(primary_val, secondary_val)
         results["ImplementationEngine"] = self.implementationengine.evaluate(primary_val, secondary_val)
         results["Enrichment2MultiresolutionFocusQualityHeatmapEngine"] = self.enrichment2multireso.evaluate(primary_val, secondary_val)
-        results["ImplementationEngine"] = self.implementationengine.evaluate(primary_val, secondary_val)
         results["Enrichment3OtsuTissueMaskTissueFoldSegmentationEngine"] = self.enrichment3otsutissu.evaluate(primary_val, secondary_val)
-        results["ImplementationEngine"] = self.implementationengine.evaluate(primary_val, secondary_val)
         results["Enrichment4PenmarkingArtifactDetectionWithColorDeconvolutionEngine"] = self.enrichment4penmarkin.evaluate(primary_val, secondary_val)
         return results
 

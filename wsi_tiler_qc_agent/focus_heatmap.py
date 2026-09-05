@@ -2,10 +2,8 @@
 Multi-Resolution Focus Quality Heatmap for WSI Tiler QC Agent.
 Generate per-tile focus heatmaps as QuPath-compatible annotation overlays.
 """
-import base64
-import io
 from dataclasses import dataclass
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Any
 
 
 @dataclass

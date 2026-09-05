@@ -3,9 +3,7 @@ Clinical Algorithmic Engine & Guideline Rules for WSI-Tiler Sentinel: Autonomous
 Domain: Digital Pathology
 Standard: CAP Cancer Protocols & ASCO/CAP 2023
 """
-import math
-from typing import Dict, Any, List, Optional
-from .models import ClinicalCasePayload, AgentAlert, UrgencyLevel, ClinicalIntegrityStatus
+from typing import Dict, Any, Optional
 
 
 class ClinicalDomainEngine:
