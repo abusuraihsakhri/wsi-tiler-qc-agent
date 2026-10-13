@@ -27,6 +27,18 @@ def _resolve_safe_path(file_path: str, must_exist: bool = False) -> Path:
     return path
 
 
+def _parse_bool(value) -> bool:
+    """Parse CSV booleans without treating nonempty 'False' as true."""
+    if isinstance(value, bool):
+        return value
+    token = str(value).strip().lower()
+    if token in ("true", "1", "yes", "y", "on"):
+        return True
+    if token in ("false", "0", "no", "n", "off", ""):
+        return False
+    raise ValueError(f"Invalid boolean value: {value!r}")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="wsi-tiler-qc-agent", description="Wsi Tiler Qc Agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -103,7 +115,9 @@ def main(argv=None):
             fieldnames = list(reader.fieldnames or [])
             rows = list(reader)
 
-        out_fields = fieldnames + ["overall_urgency", "integrity_status", "total_alerts", "audit_hash"]
+        if in_path == out_path:
+            raise ValueError("Output path must differ from the input CSV path.")
+        out_fields = list(dict.fromkeys(fieldnames + ["overall_urgency", "integrity_status", "total_alerts", "audit_hash"]))
         out_rows = []
         for r in rows:
             payload = SystemTaskPayload(
@@ -112,7 +126,7 @@ def main(argv=None):
                 primary_metric=float(r.get("primary_metric", 15.0)),
                 secondary_metric=float(r.get("secondary_metric", 5.0)),
                 status_descriptor=r.get("status_descriptor", "NOMINAL"),
-                is_critical_flag=bool(r.get("is_critical_flag", False)),
+                is_critical_flag=_parse_bool(r.get("is_critical_flag", False)),
             )
             dossier = supervisor.process_task(payload)
             row_dict = dict(r)
