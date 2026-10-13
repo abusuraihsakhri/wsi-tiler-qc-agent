@@ -1,236 +1,194 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wsi Tiler Qc Engine — Operations Console</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #090d16;
-            --card: #111827;
-            --border: #1f293d;
-            --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.25);
-            --text: #f3f4f6;
-            --text-muted: #9ca3af;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --success: #10b981;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding: 2rem;
-            min-height: 100vh;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .header-title h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
-        .header-title p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
-        .badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: var(--accent-glow);
-            color: var(--accent);
-            border: 1px solid var(--accent);
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 1.5rem;
-        }
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-        .card h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
-        input, select, textarea {
-            width: 100%;
-            padding: 0.65rem 0.9rem;
-            background: #0d1322;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: #fff;
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-        input:focus, textarea:focus { outline: none; border-color: var(--accent); }
-        .btn {
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            padding: 0.7rem 1.4rem;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-        }
-        .btn:hover { background: #2563eb; }
-        .terminal {
-            background: #060911;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: #10b981;
-            height: 380px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-        .metrics-bar {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .metric-box {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-        }
-        .metric-val { font-size: 1.4rem; font-weight: 700; color: #fff; margin-top: 0.25rem; }
-        .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Local browser image tiling, tissue/background screening and focus QC with CSV and QuPath GeoJSON exports.">
+<title>WSI Tiler QC | Local image tile screening</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1320;--panel:#132237;--edge:#2d425c;--fg:#f0f5fc;--muted:#bac8db;--accent:#70b7ff;--good:#47d5a3;--warn:#f6bd60;--bad:#fb827c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}main{width:min(1240px,100%);margin:auto;padding:24px}header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:20px}h1{font-size:1.8rem;line-height:1.15;margin:0}h2{font-size:1.1rem;margin:0 0 12px}p{margin:6px 0 12px;color:var(--muted)}small,.hint{color:var(--muted)}a{color:var(--accent)}.layout{display:grid;grid-template-columns:minmax(270px,360px) 1fr;gap:18px}.card{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:18px;margin-bottom:18px}.card:last-child{margin-bottom:0}label{display:block;font-weight:600;margin-bottom:8px}input{width:100%;display:block;margin-top:4px;padding:10px;color:var(--fg);background:#0a1525;border:1px solid #53708a;border-radius:7px;font:inherit}input[type="checkbox"]{width:auto;display:inline}.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fields label{font-size:.88rem}button{padding:10px 13px;border-radius:7px;background:#2270b4;border:1px solid #69abdf;color:white;cursor:pointer;font-weight:650}button:disabled{cursor:not-allowed;opacity:.45}button:hover:not(:disabled){background:#2e82ce}button:focus-visible,input:focus-visible,summary:focus-visible,canvas:focus-visible{outline:3px solid #ffcf80;outline-offset:2px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.stat{border:1px solid var(--edge);border-radius:8px;padding:12px}.stat b{font-size:1.25rem;display:block}.stat span{color:var(--muted);font-size:.78rem}.viewer{margin-top:16px;min-height:160px;border-radius:9px;border:1px dashed #46617c;background:#0a1525;display:flex;align-items:center;justify-content:center;padding:8px;overflow:auto}.viewer canvas{display:block;max-width:100%;height:auto;cursor:crosshair}#result{white-space:pre-wrap;word-break:break-word;min-height:44px}#selected{margin-top:10px;font:13px/1.5 ui-monospace,monospace;color:var(--muted)}.legend{display:flex;flex-wrap:wrap;gap:12px;color:var(--muted);font-size:.85rem}.swatch{display:inline-block;width:11px;height:11px;margin-right:4px;border-radius:2px}.ok{background:var(--good)}.blur{background:var(--warn)}.artifact{background:var(--bad)}.blank{background:#8393aa}details{margin-top:16px}summary{cursor:pointer;font-weight:650}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#091421;border:1px solid var(--edge);border-radius:7px;padding:12px;max-height:250px;overflow:auto}.disclaimer{font-size:.85rem}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}@media(max-width:790px){main{padding:12px}.layout{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.card{padding:14px}}
+</style>
 </head>
 <body>
-
-    <div class="header">
-        <div class="header-title">
-            <h1>Wsi Tiler Qc Engine</h1>
-            <p>Domain: Clinical & Cryptographic AI | Standard: CAP / CLSI / NIST Standards | LabMind-Atlas Architecture</p>
-        </div>
-        <div>
-            <span class="badge">Air-Gapped Active</span>
-            <span class="badge" style="background: rgba(16,185,129,0.2); color: #10b981; border-color: #10b981;">Zero-PHI Guard Active</span>
-        </div>
-    </div>
-
-    <div class="metrics-bar">
-        <div class="metric-box">
-            <div class="metric-label">System Status</div>
-            <div class="metric-val" style="color: var(--success);" id="m-status">OPTIMAL</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">Tasks Processed</div>
-            <div class="metric-val" id="m-tasks">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">Audit Blocks Signed</div>
-            <div class="metric-val" id="m-audit">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">PHI Interceptions</div>
-            <div class="metric-val" style="color: var(--accent);" id="m-phi">0</div>
-        </div>
-    </div>
-
-    <div class="grid">
-        <div class="card">
-            <h2>⚙️ Dispatch Distributed Component Audit</h2>
-            <div class="form-group">
-                <label>Task / Sample ID</label>
-                <input type="text" id="task_id" value="TASK-2026-LIVE-01">
-            </div>
-            <div class="form-group">
-                <label>Target Identifier</label>
-                <input type="text" id="target_id" value="SPECIMEN-ALPHA-77">
-            </div>
-            <div class="form-group">
-                <label>Primary Measurement / Value</label>
-                <input type="number" id="primary_metric" value="29.4" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Secondary Metric / Kinetic Index</label>
-                <input type="number" id="secondary_metric" value="14.8" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Status / Phenotype Descriptor</label>
-                <input type="text" id="status_descriptor" value="DISCORDANT_ANOMALY">
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" id="is_critical" checked> Trigger Emergency / Critical Flag</label>
-            </div>
-            <button class="btn" onclick="runAudit()">Execute Distributed Component Audit</button>
-        </div>
-
-        <div class="card">
-            <h2>📊 Real-Time Consensus Dossier & Audit Log</h2>
-            <div class="terminal" id="outputConsole">// Wsi Tiler Qc Engine Operations Console Ready
-// Connection established with Air-Gapped Supervisor
-// Cryptographic HMAC-SHA256 audit ledger loaded.
-// Ready for live task payload dispatch...</div>
-        </div>
-    </div>
-
-    <script>
-        async function runAudit() {
-            const consoleEl = document.getElementById('outputConsole');
-            consoleEl.innerText = "// Dispatching task across specialized workers...
-// Invoking InvariantQCWorker, SafetyEscalationWorker, ProtocolWorker...";
-
-            const payload = {
-                task_id: document.getElementById('task_id').value,
-                target_identifier: document.getElementById('target_id').value,
-                primary_metric: parseFloat(document.getElementById('primary_metric').value),
-                secondary_metric: parseFloat(document.getElementById('secondary_metric').value),
-                status_descriptor: document.getElementById('status_descriptor').value,
-                is_critical_flag: document.getElementById('is_critical').checked
-            };
-
-            try {
-                const res = await fetch('/api/audit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                consoleEl.innerText = JSON.stringify(data, null, 2);
-                document.getElementById('m-tasks').innerText = parseInt(document.getElementById('m-tasks').innerText) + 1;
-                document.getElementById('m-audit').innerText = parseInt(document.getElementById('m-audit').innerText) + 1;
-            } catch (err) {
-                consoleEl.innerText = "// Offline / Simulation Output:\n" + JSON.stringify({
-                    dossier_id: "DOSSIER-SIM-" + Math.floor(Math.random()*10000),
-                    system: "wsi-tiler-qc-engine",
-                    domain: "Clinical & Cryptographic AI",
-                    task_id: payload.task_id,
-                    overall_urgency: payload.is_critical_flag ? "CRITICAL_STAT_PANIC" : "ELEVATED_RISK",
-                    integrity_status: "DISCORDANT_ANOMALY",
-                    alerts: [
-                        { worker: "InvariantQCWorker", alert: "Primary metric exceeds upper reference bound" },
-                        { worker: "SafetyEscalationWorker", alert: "Critical emergency interlock flag active" }
-                    ],
-                    audit_hash: "HMAC_SHA256_e83f9a72b941d6c381f9"
-                }, null, 2);
-            }
-        }
-    </script>
+<main>
+<header><div><h1>WSI Tiler QC</h1><p>Local image patch extraction and exploratory image-quality screening</p></div><a href="https://github.com/abusuraihsakhri/wsi-tiler-qc-agent">Source repository ↗</a></header>
+<div class="layout">
+<section aria-label="Processing settings">
+<div class="card">
+<h2>1. Image and parameters</h2>
+<label for="imageFile">Raster image <input id="imageFile" type="file" accept="image/png,image/jpeg,image/webp,image/tiff,.png,.jpg,.jpeg,.webp,.tif,.tiff"></label>
+<p class="hint">PNG, JPEG, WebP, or TIFF if your browser decodes it. This is not an OpenSlide/SVS/NDPI/DICOM WSI reader. Maximum 32 megapixels.</p>
+<div class="fields">
+<label for="tileSize">Patch size (px)<input id="tileSize" type="number" value="256" min="64" max="1024" step="64"></label>
+<label for="tissueCutoff">Minimum tissue (%)<input id="tissueCutoff" type="number" value="5" min="0" max="100" step="1"></label>
+<label for="focusCutoff">Focus alert (LapVar)<input id="focusCutoff" type="number" value="30" min="0" max="100000" step="1"></label>
+<label for="penCutoff">Color alert (%)<input id="penCutoff" type="number" value="12" min="0" max="100" step="1"></label>
+</div>
+<div class="actions"><button id="run" type="button">Analyze image</button><button id="clear" type="button">Reset</button></div>
+<p class="disclaimer">Thresholds are adjustable heuristics, not validated pathology standards. Focus is measured by grayscale Laplacian variance (higher usually indicates more detail); blue/green saturated pixels are only a possible marking-artifact signal.</p>
+</div>
+<div class="card">
+<h2>2. Exports</h2><p>QuPath GeoJSON uses image pixel coordinates (level 0). CSV includes per-tile QC metrics. A ZIP contains accepted PNG patches, up to 200 patches and 100 MiB.</p>
+<div class="actions"><button id="csv" type="button" disabled>Download CSV</button><button id="geo" type="button" disabled>QuPath GeoJSON</button><button id="zip" type="button" disabled>Accepted tiles ZIP</button></div>
+<p class="hint" id="downloadNote">Run an analysis to enable exports.</p>
+</div>
+</section>
+<section aria-label="Results">
+<div class="card">
+<h2>QC overview</h2>
+<div class="metrics" aria-label="Tile counts"><div class="stat"><b id="total">—</b><span>Tiles scanned</span></div><div class="stat"><b id="accepted">—</b><span>Accepted</span></div><div class="stat"><b id="review">—</b><span>Review flags</span></div><div class="stat"><b id="background">—</b><span>Background</span></div></div>
+<p id="result" aria-live="polite" role="status">Select an image to begin. Processing is entirely on your device.</p>
+<div class="legend"><span><i class="swatch ok"></i>Accepted</span><span><i class="swatch blur"></i>Low focus</span><span><i class="swatch artifact"></i>Possible marking</span><span><i class="swatch blank"></i>Background</span></div>
+<div class="viewer"><canvas id="preview" width="600" height="160" tabindex="0" role="img" aria-label="Image preview with tile quality overlay"></canvas></div>
+<div id="selected">Select a tile in the preview to inspect its metrics.</div>
+</div>
+<div class="card">
+<details><summary>Rule-based numeric audit (legacy workflow)</summary>
+<p>This is a local, unsiged simulation of the repository's threshold rules. It does not call a server or produce a cryptographic audit record.</p>
+<div class="fields"><label for="task">Task ID<input id="task" value="TASK-001"></label><label for="target">Target ID<input id="target" value="SPECIMEN-001"></label><label for="primary">Primary metric<input id="primary" type="number" value="29.4" step="any"></label><label for="secondary">Secondary metric<input id="secondary" type="number" value="14.8" step="any"></label></div>
+<label for="descriptor">Status descriptor<input id="descriptor" value="DISCORDANT_ANOMALY"></label>
+<label><input id="critical" type="checkbox"> Critical flag</label>
+<button id="audit" type="button">Evaluate numeric rules</button><pre id="auditOutput" aria-live="polite">No evaluation performed.</pre>
+</details>
+</div>
+</section>
+</div>
+<footer><p class="disclaimer">Images remain in browser memory; no upload, account, analytics, or external model is used. Reloading clears results. For real gigapixel WSIs and clinical use, use a separately validated, supported imaging pipeline.</p></footer>
+</main>
+<script>
+"use strict";
+const el = id => document.getElementById(id);
+const MAX_PIXELS=32000000, MAX_TILES=2000, MAX_ZIP_TILES=200, MAX_ZIP_BYTES=100*1024*1024;
+let bitmap=null, tiles=[], settings=null, imageName="image", busy=false;
+const preview=el("preview"), pctx=preview.getContext("2d");
+function status(message){el("result").textContent=message}
+function yieldFrame(){return new Promise(resolve=>requestAnimationFrame(resolve))}
+function download(blob,name){const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000)}
+function limitNumber(id,min,max){const n=Number(el(id).value);if(!Number.isFinite(n)||n<min||n>max)throw Error(id+" must be between "+min+" and "+max);return n}
+function otsu(hist,total){
+ let sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];
+ let left=0,weight=0,best=0,thr=0;
+ for(let i=0;i<256;i++){weight+=hist[i];if(!weight)continue;const right=total-weight;if(!right)break;left+=i*hist[i];const diff=left/weight-(sum-left)/right;const variance=weight*right*diff*diff;if(variance>best){best=variance;thr=i}}
+ return Math.min(235,thr);
+}
+function analyzeTile(data,w,h,threshold){
+ const d=data.data,gray=new Float32Array(w*h);let tissue=0,pen=0;
+ for(let i=0,j=0;i<d.length;i+=4,j++){
+   const r=d[i],g=d[i+1],b=d[i+2];const lum=.299*r+.587*g+.114*b;gray[j]=lum;
+   const min=Math.min(r,g,b),max=Math.max(r,g,b);
+   if(lum<=threshold)tissue++;
+   // This deliberately only flags conspicuous saturated blue/green pixels.
+   if(max-min>65 && (b>r*1.45&&b>g*1.15 || g>r*1.55&&g>b*1.08))pen++;
+ }
+ let sum=0,sq=0,n=0;
+ for(let y=1;y<h-1;y+=2)for(let x=1;x<w-1;x+=2){
+   const i=y*w+x,v=4*gray[i]-gray[i-1]-gray[i+1]-gray[i-w]-gray[i+w];
+   sum+=v;sq+=v*v;n++;
+ }
+ const focus=n?Math.max(0,sq/n-(sum/n)**2):0;
+ return {tissue:100*tissue/(w*h),pen:100*pen/(w*h),focus};
+}
+function drawPreview(){
+ if(!bitmap)return;
+ const scale=Math.min(880/bitmap.width,520/bitmap.height,1);
+ preview.width=Math.max(1,Math.round(bitmap.width*scale));preview.height=Math.max(1,Math.round(bitmap.height*scale));
+ pctx.clearRect(0,0,preview.width,preview.height);pctx.drawImage(bitmap,0,0,preview.width,preview.height);
+ const fill={ACCEPTED:"rgba(71,213,163,.23)",LOW_FOCUS:"rgba(246,189,96,.40)",COLOR_REVIEW:"rgba(251,130,124,.40)",BACKGROUND:"rgba(131,147,170,.24)"};
+ for(const t of tiles){pctx.fillStyle=fill[t.status];pctx.fillRect(t.x*scale,t.y*scale,t.width*scale,t.height*scale)}
+}
+function empty(){
+ tiles=[];settings=null;["total","accepted","review","background"].forEach(id=>el(id).textContent="—");
+ ["csv","geo","zip"].forEach(id=>el(id).disabled=true);el("downloadNote").textContent="Run an analysis to enable exports.";
+ el("selected").textContent="Select a tile in the preview to inspect its metrics.";
+ preview.width=600;preview.height=160;pctx.clearRect(0,0,600,160);
+}
+async function runImage(){
+ if(busy)return;busy=true;el("run").disabled=true;empty();
+ try{
+  const file=el("imageFile").files[0];if(!file)throw Error("Choose a raster image first.");
+  const tileSize=limitNumber("tileSize",64,1024);
+  if(!Number.isInteger(tileSize))throw Error("Patch size must be an integer.");
+  const tissueCutoff=limitNumber("tissueCutoff",0,100),focusCutoff=limitNumber("focusCutoff",0,100000),penCutoff=limitNumber("penCutoff",0,100);
+  if(bitmap){bitmap.close();bitmap=null}
+  bitmap=await createImageBitmap(file);
+  if(bitmap.width*bitmap.height>MAX_PIXELS)throw Error("Image exceeds the 32 megapixel browser limit. Use a native WSI pipeline.");
+  const nx=Math.ceil(bitmap.width/tileSize),ny=Math.ceil(bitmap.height/tileSize);
+  if(nx*ny>MAX_TILES)throw Error("Too many patches. Increase the patch size (limit: "+MAX_TILES+").");
+  settings={tileSize,tissueCutoff,focusCutoff,penCutoff};
+  imageName=(file.name.replace(/\.[^/.]+$/,"").replace(/[^a-zA-Z0-9_-]/g,"_").slice(0,60)||"image");
+  const work=document.createElement("canvas"),ctx=work.getContext("2d",{willReadFrequently:true});
+  const thumb=document.createElement("canvas"),tw=Math.min(bitmap.width,512),th=Math.max(1,Math.round(bitmap.height*tw/bitmap.width));thumb.width=tw;thumb.height=th;
+  const tx=thumb.getContext("2d",{willReadFrequently:true});tx.drawImage(bitmap,0,0,tw,th);
+  const sample=tx.getImageData(0,0,tw,th).data,hist=new Uint32Array(256);
+  for(let i=0;i<sample.length;i+=4)hist[Math.round(.299*sample[i]+.587*sample[i+1]+.114*sample[i+2])]++;
+  const threshold=otsu(hist,tw*th);
+  let done=0;
+  for(let y=0;y<bitmap.height;y+=tileSize)for(let x=0;x<bitmap.width;x+=tileSize){
+   const w=Math.min(tileSize,bitmap.width-x),h=Math.min(tileSize,bitmap.height-y);
+   work.width=w;work.height=h;ctx.drawImage(bitmap,x,y,w,h,0,0,w,h);
+   const m=analyzeTile(ctx.getImageData(0,0,w,h),w,h,threshold);
+   const state=m.tissue<tissueCutoff?"BACKGROUND":m.focus<focusCutoff?"LOW_FOCUS":m.pen>penCutoff?"COLOR_REVIEW":"ACCEPTED";
+   tiles.push({tile_id:"tile_"+x+"_"+y,x,y,width:w,height:h,tissue_percentage:+m.tissue.toFixed(2),focus_laplacian_variance:+m.focus.toFixed(2),suspected_color_percentage:+m.pen.toFixed(2),status:state});
+   done++;if(done%15===0){status("Analyzing "+done+"/"+(nx*ny)+" tiles…");await yieldFrame()}
+  }
+  const counts={ACCEPTED:0,LOW_FOCUS:0,COLOR_REVIEW:0,BACKGROUND:0};tiles.forEach(t=>counts[t.status]++);
+  el("total").textContent=tiles.length;el("accepted").textContent=counts.ACCEPTED;el("review").textContent=counts.LOW_FOCUS+counts.COLOR_REVIEW;el("background").textContent=counts.BACKGROUND;
+  drawPreview();status("Done — "+bitmap.width+" × "+bitmap.height+" px; "+nx+" × "+ny+" patch grid. Per-image Otsu grayscale threshold: "+threshold+".");
+  ["csv","geo"].forEach(id=>el(id).disabled=false);
+  el("zip").disabled=counts.ACCEPTED===0||counts.ACCEPTED>MAX_ZIP_TILES;
+  el("downloadNote").textContent=counts.ACCEPTED>MAX_ZIP_TILES?"ZIP disabled: more than 200 accepted patches. Increase patch size or thresholds.":"The outputs reflect the current thresholds and original image pixels.";
+ }catch(err){status("Error: "+err.message);empty()}finally{busy=false;el("run").disabled=false}
+}
+function csvCell(x){const s=String(x==null?"":x);return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+el("run").addEventListener("click",runImage);
+el("clear").addEventListener("click",()=>{if(busy)return;if(bitmap){bitmap.close();bitmap=null}el("imageFile").value="";empty();status("Select an image to begin.")});
+el("csv").addEventListener("click",()=>{if(!tiles.length)return;const cols=Object.keys(tiles[0]);const content=[cols.join(","),...tiles.map(t=>cols.map(k=>csvCell(t[k])).join(","))].join("\r\n");download(new Blob([content],{type:"text/csv;charset=utf-8"}),imageName+"_tile_qc.csv")});
+el("geo").addEventListener("click",()=>{if(!tiles.length)return;const data={type:"FeatureCollection",features:tiles.map(t=>({type:"Feature",geometry:{type:"Polygon",coordinates:[[[t.x,t.y],[t.x+t.width,t.y],[t.x+t.width,t.y+t.height],[t.x,t.y+t.height],[t.x,t.y]]]},properties:{name:t.tile_id,classification:{name:t.status},tissue_percentage:t.tissue_percentage,focus_laplacian_variance:t.focus_laplacian_variance,suspected_color_percentage:t.suspected_color_percentage}}))};download(new Blob([JSON.stringify(data,null,2)],{type:"application/geo+json"}),imageName+"_qc.geojson")});
+preview.addEventListener("click",event=>{if(!bitmap||!tiles.length)return;const box=preview.getBoundingClientRect();const x=(event.clientX-box.left)/box.width*bitmap.width,y=(event.clientY-box.top)/box.height*bitmap.height;const t=tiles.find(v=>x>=v.x&&x<v.x+v.width&&y>=v.y&&y<v.y+v.height);if(t)el("selected").textContent=JSON.stringify(t)});
+function crc32(data){let c=-1;for(const b of data){c^=b;for(let j=0;j<8;j++)c=(c>>>1)^((c&1)?0xedb88320:0)}return(c^-1)>>>0}
+function u16(view,off,value){view.setUint16(off,value,true)}function u32(view,off,value){view.setUint32(off,value>>>0,true)}
+function zipStore(entries){
+ const chunks=[],central=[];let offset=0;
+ for(const item of entries){const name=new TextEncoder().encode(item.name),d=item.data,crc=crc32(d);
+  const head=new Uint8Array(30+name.length),v=new DataView(head.buffer);u32(v,0,0x04034b50);u16(v,4,20);u16(v,6,0x800);u16(v,8,0);u32(v,14,crc);u32(v,18,d.length);u32(v,22,d.length);u16(v,26,name.length);head.set(name,30);
+  chunks.push(head,d);
+  const ch=new Uint8Array(46+name.length),cv=new DataView(ch.buffer);u32(cv,0,0x02014b50);u16(cv,4,20);u16(cv,6,20);u16(cv,8,0x800);u32(cv,16,crc);u32(cv,20,d.length);u32(cv,24,d.length);u16(cv,28,name.length);u32(cv,42,offset);ch.set(name,46);central.push(ch);
+  offset+=head.length+d.length;
+ }
+ const centralSize=central.reduce((n,b)=>n+b.length,0);
+ const end=new Uint8Array(22),ev=new DataView(end.buffer);u32(ev,0,0x06054b50);u16(ev,8,entries.length);u16(ev,10,entries.length);u32(ev,12,centralSize);u32(ev,16,offset);
+ return new Blob([...chunks,...central,end],{type:"application/zip"});
+}
+el("zip").addEventListener("click",async()=>{
+ if(busy||!bitmap||!tiles.length)return;
+ const accepted=tiles.filter(t=>t.status==="ACCEPTED");if(!accepted.length||accepted.length>MAX_ZIP_TILES)return;
+ busy=true;el("zip").disabled=true;const work=document.createElement("canvas"),ctx=work.getContext("2d"),entries=[];let bytes=0;
+ try{
+  for(const [i,t] of accepted.entries()){
+   work.width=t.width;work.height=t.height;ctx.drawImage(bitmap,t.x,t.y,t.width,t.height,0,0,t.width,t.height);
+   const b=await new Promise((resolve,reject)=>work.toBlob(v=>v?resolve(v):reject(Error("PNG encoding failed")),"image/png"));
+   const arr=new Uint8Array(await b.arrayBuffer());bytes+=arr.length;
+   if(bytes>MAX_ZIP_BYTES)throw Error("ZIP exceeds 100 MiB browser export limit.");
+   entries.push({name:t.tile_id+".png",data:arr});
+   if(i%10===0){status("Encoding "+(i+1)+"/"+accepted.length+" accepted patches…");await yieldFrame()}
+  }
+  download(zipStore(entries),imageName+"_accepted_tiles.zip");status("ZIP ready: "+accepted.length+" accepted PNG patches.");
+ }catch(err){status("Export error: "+err.message)}finally{busy=false;el("zip").disabled=false}
+});
+el("audit").addEventListener("click",()=>{
+ try{
+ const primary=limitNumber("primary",-1e12,1e12),secondary=limitNumber("secondary",-1e12,1e12);
+ const alerts=[];const critical=el("critical").checked,descriptor=el("descriptor").value.toUpperCase();
+ if(primary>25)alerts.push({worker:"InvariantQCWorker",urgency:"ELEVATED_RISK",summary:"Primary metric exceeds configured 25.00 threshold"});
+ if(critical||secondary>12)alerts.push({worker:"SafetyEscalationWorker",urgency:critical?"CRITICAL_STAT_PANIC":"ELEVATED_RISK",summary:"Critical flag or secondary metric exceeds 12.00"});
+ if(["DISCORDANT","ANOMALY","MUTANT","VIOLATION","FAIL","REJECT"].some(word=>descriptor.includes(word)))alerts.push({worker:"ProtocolConformanceWorker",urgency:"ELEVATED_RISK",summary:"Status descriptor matched a configured warning term"});
+ const urgency=alerts.some(a=>a.urgency==="CRITICAL_STAT_PANIC")?"CRITICAL_STAT_PANIC":alerts.length?"ELEVATED_RISK":"ROUTINE";
+ const out={mode:"LOCAL_RULE_EVALUATION_NOT_SIGNED",task_id:el("task").value,target_identifier:el("target").value,overall_urgency:urgency,integrity_status:urgency==="CRITICAL_STAT_PANIC"?"RECALIBRATION_REQUIRED":alerts.length?"DISCORDANT_ANOMALY":"VALIDATED_OPTIMAL",total_alerts:alerts.length,alerts};
+ el("auditOutput").textContent=JSON.stringify(out,null,2);
+ }catch(err){el("auditOutput").textContent="Error: "+err.message}
+});
+empty();
+</script>
 </body>
 </html>
